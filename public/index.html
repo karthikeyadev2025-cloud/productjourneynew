@@ -540,12 +540,74 @@ drop.ondragleave = () => drop.classList.remove('over');
 drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); uploadFiles(e.dataTransfer.files); };
 fileInput.onchange = () => uploadFiles(fileInput.files);
 
+function compressAndResizeImage(file) {
+  return new Promise((resolve) => {
+    // If it's small enough (under 2MB), keep it as is
+    if (file.size <= 2 * 1024 * 1024) {
+      return resolve(file);
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1600;
+        
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          // Re-create file object with original name
+          const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+            type: "image/jpeg",
+            lastModified: Date.now()
+          });
+          resolve(compressedFile);
+        }, "image/jpeg", 0.85);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadFiles(files){
   if(!files.length) return;
+  toast('Optimizing images for upload...');
   const fd = new FormData();
-  [...files].forEach(f => fd.append('images', f));
-  try{ await api('/api/input/upload', {method:'POST', body:fd}); toast(files.length + ' image(s) added to queue'); loadQueue(); }
-  catch(e){ toast(e.message); }
+  
+  for (const file of [...files]) {
+    try {
+      const optimized = await compressAndResizeImage(file);
+      fd.append('images', optimized);
+    } catch (e) {
+      // Fallback to original if compression fails
+      fd.append('images', file);
+    }
+  }
+  
+  try{ 
+    await api('/api/input/upload', {method:'POST', body:fd}); 
+    toast(files.length + ' image(s) uploaded successfully'); 
+    loadQueue(); 
+  } catch(e){ 
+    toast(e.message); 
+  }
   fileInput.value='';
 }
 

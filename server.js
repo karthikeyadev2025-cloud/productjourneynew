@@ -44,12 +44,20 @@ async function loadConfig(store) {
 
   try {
     const dbSettings = await store.getSettings();
+    let imageModel = dbSettings.image_model || defaults.imageModel;
+    if (imageModel.includes('3.1-flash-image') || !imageModel) {
+      imageModel = 'gemini-2.5-flash-image';
+    }
+    let textModel = dbSettings.text_model || defaults.textModel;
+    if (textModel.includes('gemini-flash-latest') || !textModel) {
+      textModel = 'gemini-2.5-flash';
+    }
     return {
       geminiApiKey: dbSettings.gemini_api_key || defaults.geminiApiKey,
       supabaseUrl:  dbSettings.supabase_url || defaults.supabaseUrl,
       supabaseKey:  dbSettings.supabase_key || defaults.supabaseKey,
-      textModel:    dbSettings.text_model || defaults.textModel,
-      imageModel:   dbSettings.image_model || defaults.imageModel,
+      textModel,
+      imageModel,
       scenes:       dbSettings.scenes?.length ? dbSettings.scenes : defaults.scenes,
       angles:       dbSettings.angles || defaults.angles,
       gender:       dbSettings.gender || defaults.gender,

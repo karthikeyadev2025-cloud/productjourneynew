@@ -993,10 +993,16 @@ function compressAndResizeImage(file) {
 
 async function uploadFiles(files){
   if(!files.length) return;
-  toast('Optimizing images for upload...');
-  const fd = new FormData();
   
-  for (const file of [...files]) {
+  let successCount = 0;
+  let failCount = 0;
+  const total = files.length;
+
+  for (let i = 0; i < total; i++) {
+    const file = files[i];
+    toast(`Optimizing and uploading image ${i + 1} of ${total}...`, 10000);
+    
+    const fd = new FormData();
     try {
       const optimized = await compressAndResizeImage(file);
       fd.append('images', optimized);
@@ -1004,15 +1010,23 @@ async function uploadFiles(files){
       // Fallback to original if compression fails
       fd.append('images', file);
     }
+
+    try { 
+      await api('/api/input/upload', {method:'POST', body:fd}); 
+      successCount++;
+    } catch(e) { 
+      console.error('Upload failed for ' + file.name, e.message);
+      failCount++;
+    }
   }
   
-  try{ 
-    await api('/api/input/upload', {method:'POST', body:fd}); 
-    toast(files.length + ' image(s) uploaded successfully'); 
-    loadQueue(); 
-  } catch(e){ 
-    toast(e.message); 
+  if (successCount > 0) {
+    toast(`✓ Uploaded ${successCount} image(s) successfully` + (failCount > 0 ? ` (${failCount} failed)` : ''));
+  } else {
+    toast(`❌ Failed to upload image(s)`);
   }
+  
+  loadQueue();
   fileInput.value='';
 }
 

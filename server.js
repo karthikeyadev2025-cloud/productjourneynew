@@ -38,7 +38,8 @@ async function loadConfig(store) {
     angles:       [],
     gender:       'female',
     preset:       'clean',
-    aspectRatio:  '1:1'
+    aspectRatio:  '1:1',
+    watermarkUrl: ''
   };
 
   if (!store.enabled) return defaults;
@@ -56,10 +57,18 @@ async function loadConfig(store) {
     
     let presetVal = dbSettings.preset || defaults.preset;
     let aspectRatio = '1:1';
+    let watermarkUrl = '';
     if (presetVal.includes('_aspectRatio_')) {
       const parts = presetVal.split('_aspectRatio_');
       presetVal = parts[0];
-      aspectRatio = parts[1] || '1:1';
+      const rest = parts[1] || '';
+      if (rest.includes('_watermark_')) {
+        const subparts = rest.split('_watermark_');
+        aspectRatio = subparts[0] || '1:1';
+        watermarkUrl = subparts[1] || '';
+      } else {
+        aspectRatio = rest || '1:1';
+      }
     }
 
     return {
@@ -72,7 +81,8 @@ async function loadConfig(store) {
       angles:       dbSettings.angles || defaults.angles,
       gender:       dbSettings.gender || defaults.gender,
       preset:       presetVal,
-      aspectRatio:  aspectRatio
+      aspectRatio:  aspectRatio,
+      watermarkUrl: watermarkUrl
     };
   } catch {
     return defaults;
@@ -90,11 +100,12 @@ async function saveConfig(store, updates) {
   if (updates.angles !== undefined)      mapped.angles = updates.angles;
   if (updates.gender !== undefined)      mapped.gender = updates.gender;
   
-  if (updates.preset !== undefined || updates.aspectRatio !== undefined) {
+  if (updates.preset !== undefined || updates.aspectRatio !== undefined || updates.watermarkUrl !== undefined) {
     const cfg = await loadConfig(store);
     const pVal = updates.preset !== undefined ? updates.preset : cfg.preset;
     const rVal = updates.aspectRatio !== undefined ? updates.aspectRatio : cfg.aspectRatio;
-    mapped.preset = `${pVal}_aspectRatio_${rVal}`;
+    const wVal = updates.watermarkUrl !== undefined ? updates.watermarkUrl : cfg.watermarkUrl;
+    mapped.preset = `${pVal}_aspectRatio_${rVal}_watermark_${wVal}`;
   }
   await store.saveSettings(mapped);
 }
@@ -201,8 +212,21 @@ app.post('/api/settings', auth, async (req, res) => {
     if (Array.isArray(b.angles)) updates.angles = b.angles;
     if (b.gender) updates.gender = String(b.gender);
     if (b.preset) updates.preset = String(b.preset);
+    if (b.watermarkUrl !== undefined) updates.watermarkUrl = String(b.watermarkUrl);
     await saveConfig(store, updates);
     res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/settings/upload-watermark', auth, upload.single('logo'), async (req, res) => {
+  try {
+    const store = getStore();
+    if (!req.file) return res.status(400).json({ error: 'No logo file provided' });
+    const up = await store.uploadImage('logo', `watermark-${Date.now()}.png`, req.file.buffer, req.file.mimetype);
+    await saveConfig(store, { watermarkUrl: up.publicUrl });
+    res.json({ ok: true, url: up.publicUrl });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

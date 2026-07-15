@@ -530,6 +530,22 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
         </div>
         <div class="status" style="margin-top:16px"><span class="dot" id="sbDot"></span><span id="sbStatus">Not connected</span></div>
       </div>
+
+      <div class="card" style="margin-top: 24px;">
+        <h2>Watermark Configuration</h2>
+        <div class="sub">Upload a transparent PNG logo. All generated outputs and original file copies will automatically overlay this watermark.</div>
+        
+        <div style="margin-top: 18px; text-align: center; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 20px; border: 1px dashed var(--line);">
+          <img id="watermarkPreview" src="" alt="Watermark Preview" style="max-height: 80px; object-fit: contain; display: none; margin: 0 auto 10px;">
+          <div id="watermarkEmptyText" style="color: var(--mut); font-size: 13.5px; font-style: italic;">No watermark logo active</div>
+        </div>
+
+        <input type="file" id="watermarkInput" accept="image/png" style="display: none;">
+        <div class="row" style="margin-top: 20px; justify-content: center; gap: 8px;">
+          <button class="btn small" onclick="$('#watermarkInput').click()">Upload PNG Logo</button>
+          <button class="btn small ghost" id="watermarkRemoveBtn" style="border-color: var(--bad); color: var(--bad); display: none;">Remove Logo</button>
+        </div>
+      </div>
     </div>
   </section>
 </div>
@@ -1010,6 +1026,19 @@ function fillSettings(){
   $('#imageModel').value = cfg.imageModel;
   $('#sbUrl').value = cfg.supabaseUrl || '';
   $('#sbKey').value = cfg.supabaseKey || '';
+
+  const w = cfg.watermarkUrl;
+  if(w) {
+    $('#watermarkPreview').src = w;
+    $('#watermarkPreview').style.display = 'block';
+    $('#watermarkEmptyText').style.display = 'none';
+    $('#watermarkRemoveBtn').style.display = 'inline-flex';
+  } else {
+    $('#watermarkPreview').src = '';
+    $('#watermarkPreview').style.display = 'none';
+    $('#watermarkEmptyText').style.display = 'block';
+    $('#watermarkRemoveBtn').style.display = 'none';
+  }
 }
 
 function updateSbStatus(){
@@ -1058,6 +1087,36 @@ $('#testSb').onclick = async () => {
     const isPass = el.type === 'password';
     el.type = isPass ? 'text' : 'password';
     $('#togglePass').textContent = isPass ? '🙈' : '👁️';
+  };
+
+  // Bind watermark upload triggers
+  $('#watermarkInput').onchange = async () => {
+    const file = $('#watermarkInput').files[0];
+    if(!file) return;
+    toast('Uploading watermark...');
+    const fd = new FormData();
+    fd.append('logo', file);
+    try {
+      const res = await api('/api/settings/upload-watermark', { method: 'POST', body: fd });
+      toast('Watermark logo active!');
+      cfg = await api('/api/settings');
+      fillSettings();
+    } catch(e) {
+      toast('Upload failed: ' + e.message);
+    }
+    $('#watermarkInput').value = '';
+  };
+
+  $('#watermarkRemoveBtn').onclick = async () => {
+    if(!confirm('Disable watermark and remove logo?')) return;
+    try {
+      await api('/api/settings', { method: 'POST', body: { watermarkUrl: '' } });
+      toast('Watermark disabled');
+      cfg = await api('/api/settings');
+      fillSettings();
+    } catch(e) {
+      toast(e.message);
+    }
   };
 
   if(!token) {

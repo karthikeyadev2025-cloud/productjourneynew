@@ -652,20 +652,33 @@ $('#runBtn').onclick = async () => {
   }catch(e){ toast(e.message); }
 };
 
-function startProcessing(){
-  clearInterval(processingTimer);
-  processingTimer = setInterval(async () => {
-    try{
+let isProcessing = false;
+
+async function runProcessingLoop() {
+  if (isProcessing) return;
+  isProcessing = true;
+  
+  while (isProcessing) {
+    try {
       const result = await api('/api/process/next', {method:'POST'});
-      if(result.done){
-        clearInterval(processingTimer);
+      if (result.done) {
+        isProcessing = false;
         setTimeout(pollStatus, 500);
+        break;
       }
-    }catch(e){
-      clearInterval(processingTimer);
+      // Wait 1.5 seconds before firing the next request to allow the API to breathe
+      await new Promise(r => setTimeout(r, 1500));
+    } catch (e) {
+      isProcessing = false;
       toast('Processing error: ' + e.message);
+      break;
     }
-  }, 2500);
+  }
+}
+
+function startProcessing(){
+  isProcessing = false;
+  runProcessingLoop();
 }
 
 function startPolling(){
@@ -684,7 +697,7 @@ async function pollStatus(){
     $('#logbox').scrollTop = $('#logbox').scrollHeight;
     if(!j.running && j.total){
       clearInterval(pollTimer);
-      clearInterval(processingTimer);
+      isProcessing = false;
       loadQueue(); loadProducts();
       if(j.done === j.total) toast('Batch complete');
     }

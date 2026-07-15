@@ -1,8 +1,8 @@
 -- Run this once in the Supabase SQL editor for your new project.
--- Creates all tables used by the jewelry pipeline (Vercel cloud version).
+-- Creates all tables and storage buckets used by the jewelry pipeline (Vercel cloud version).
 
 -- ============================================================
--- 1. Products table (original)
+-- 1. Products table
 -- ============================================================
 create table if not exists public.products (
   id            uuid primary key default gen_random_uuid(),
@@ -64,24 +64,26 @@ create table if not exists public.jobs (
 
 alter table public.jobs enable row level security;
 
--- Insert a default job row (singleton pattern — we always update this one row)
+-- Insert singleton rows if they don't exist
 insert into public.jobs (id, running) values ('00000000-0000-0000-0000-000000000001', false)
 on conflict (id) do nothing;
 
--- Insert a default settings row
 insert into public.settings (id) values ('main')
 on conflict (id) do nothing;
 
--- ============================================================
--- Storage buckets
--- ============================================================
--- The "jewelry" bucket (for output images) is created automatically by the app.
--- The "jewelry-input" bucket (for raw uploads) is also created automatically.
--- Both are set to public so URLs work directly.
 
 -- ============================================================
--- RLS policies for service-key access
+-- 4. Storage Buckets Setup
 -- ============================================================
--- The server uses the service_role key which bypasses RLS,
--- so no additional policies are needed for writes.
--- Public read on products is already set above.
+-- Insert the public buckets directly into storage schema
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values 
+  ('jewelry', 'jewelry', true, null, null),
+  ('jewelry-input', 'jewelry-input', true, null, null)
+on conflict (id) do nothing;
+
+-- Drop and recreate access policies to allow public reading of images
+drop policy if exists "Public Access to Jewelry Images" on storage.objects;
+create policy "Public Access to Jewelry Images"
+on storage.objects for select
+using ( bucket_id in ('jewelry', 'jewelry-input') );

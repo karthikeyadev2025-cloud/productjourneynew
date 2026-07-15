@@ -319,6 +319,7 @@ app.post('/api/process', auth, async (req, res) => {
     const job = await store.getJob();
     if (job.running) return res.status(409).json({ error: 'A batch is already running' });
 
+    // Pass store so startBatch can pre-populate the perImage map for all queued files
     const result = await startBatch(store);
     res.json({ started: true, count: result.count });
   } catch (err) {
@@ -346,7 +347,30 @@ app.get('/api/status', auth, async (req, res) => {
     const job = await store.getJob();
     res.json(job);
   } catch (err) {
-    res.json({ running: false, total: 0, done: 0, current: '', step: '', logs: [], results: [], errors: [] });
+    res.json({ running: false, total: 0, done: 0, current: '', step: '', logs: [], results: [], errors: [], perImage: {} });
+  }
+});
+
+// Enriched status — returns full perImage map and timing info for the Batch Command Center UI
+app.get('/api/status/detail', auth, async (req, res) => {
+  try {
+    const store = getStore();
+    const job = await store.getJob();
+    const pct = job.total ? Math.round((job.done / job.total) * 100) : 0;
+    res.json({
+      running: job.running || false,
+      total: job.total || 0,
+      done: job.done || 0,
+      pct,
+      current: job.current || '',
+      step: job.step || '',
+      logs: job.logs || [],
+      results: job.results || [],
+      errors: job.errors || [],
+      perImage: job.perImage || {}
+    });
+  } catch (err) {
+    res.json({ running: false, total: 0, done: 0, pct: 0, current: '', step: '', logs: [], results: [], errors: [], perImage: {} });
   }
 });
 
@@ -354,7 +378,8 @@ app.get('/api/status', auth, async (req, res) => {
 app.get('/api/products', auth, async (req, res) => {
   try {
     const store = getStore();
-    const products = await store.listProducts({ limit: 200 });
+    // Limit raised to 10000 to support 100-image batches
+    const products = await store.listProducts({ limit: 10000 });
     res.json({ products });
   } catch (err) {
     res.status(500).json({ error: err.message });

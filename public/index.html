@@ -311,6 +311,157 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
   background: var(--gold);
   color: #0b0a08;
 }
+/* Batch Command Center */
+.bcc { margin-top: 24px; display: none; }
+.bcc.show { display: block; }
+
+/* Main progress row */
+.bcc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+}
+.bcc-title {
+  font-family: var(--disp); font-size: 22px; font-weight: 500; color: var(--gold-soft);
+}
+.bcc-counter {
+  font-size: 28px; font-family: var(--disp); font-weight: 600; color: var(--cream);
+  letter-spacing: -0.5px;
+}
+.bcc-counter span { color: var(--mut); font-weight: 300; font-size: 20px; }
+
+/* Big bar */
+.bcc-bar-wrap {
+  background: var(--ink); border: 1px solid var(--line); border-radius: 99px;
+  height: 14px; overflow: hidden; margin-bottom: 10px; position: relative;
+}
+.bcc-bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #b8892d, var(--gold), #f3e5ab, var(--gold));
+  background-size: 200% 100%;
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: shimmer 2s linear infinite;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* Metrics row */
+.bcc-metrics {
+  display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 18px;
+  padding: 14px 18px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+}
+.bcc-metric {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.bcc-metric-val {
+  font-size: 18px; font-family: var(--disp); font-weight: 600; color: var(--cream);
+}
+.bcc-metric-val.ok { color: var(--ok); }
+.bcc-metric-val.bad { color: var(--bad); }
+.bcc-metric-val.gold { color: var(--gold); }
+.bcc-metric-lbl {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--mut);
+}
+
+/* Current image sub-step tracker */
+.bcc-substep {
+  background: var(--ink); border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px 18px; margin-bottom: 18px;
+}
+.bcc-substep-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-soft);
+  margin-bottom: 10px;
+}
+.bcc-phases {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+.bcc-phase {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 99px;
+  border: 1px solid var(--line);
+  font-size: 12px; color: var(--mut);
+  transition: var(--transition);
+  background: var(--panel);
+}
+.bcc-phase.done {
+  border-color: var(--ok); color: var(--ok); background: rgba(142, 189, 119, 0.08);
+}
+.bcc-phase.active {
+  border-color: var(--gold); color: var(--gold-soft); background: rgba(212, 175, 55, 0.1);
+  animation: goldPulse 2s infinite;
+}
+.bcc-phase-arrow { color: var(--line); font-size: 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.bcc-spinner {
+  display: inline-block; width: 10px; height: 10px;
+  border: 2px solid rgba(212,175,55,0.3); border-top-color: var(--gold);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+
+/* Image tile grid */
+.bcc-grid-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mut);
+  margin-bottom: 10px;
+}
+.bcc-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+  margin-bottom: 18px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+.bcc-tile {
+  border: 1.5px solid var(--line); border-radius: 8px;
+  background: var(--panel);
+  padding: 8px 6px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: var(--transition);
+  cursor: default; position: relative;
+  min-height: 60px;
+}
+.bcc-tile.queued  { border-color: var(--line); opacity: 0.5; }
+.bcc-tile.active  { border-color: var(--gold); background: rgba(212,175,55,0.07); animation: goldPulse 2s infinite; }
+.bcc-tile.done    { border-color: var(--ok); background: rgba(142,189,119,0.07); }
+.bcc-tile.error   { border-color: var(--bad); background: rgba(229,115,115,0.07); }
+.bcc-tile-icon { font-size: 16px; line-height: 1; }
+.bcc-tile-name {
+  font-size: 9px; color: var(--mut); text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
+}
+.bcc-tile-scenes {
+  font-size: 9px; color: var(--ok); font-weight: 600;
+}
+
+/* Log window */
+.bcc-log-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+}
+.bcc-log-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mut); }
+.bcc-log-toggle {
+  font-size: 11px; color: var(--gold-soft); background: none; border: 1px solid var(--line);
+  padding: 3px 10px; border-radius: 6px; cursor: pointer; transition: var(--transition);
+}
+.bcc-log-toggle:hover { border-color: var(--gold); }
+.bcc-logbox {
+  background: var(--ink); border: 1px solid var(--line); border-radius: 10px;
+  padding: 14px; height: 180px; overflow-y: auto;
+  font-size: 11.5px; color: var(--mut); line-height: 1.7;
+  font-family: ui-monospace, monospace;
+  transition: height 0.3s ease;
+}
+.bcc-logbox.collapsed { height: 0; padding: 0; border: none; }
+.bcc-log-info  { color: var(--cream); }
+.bcc-log-error { color: var(--bad); }
+.bcc-log-warn  { color: #f0a500; }
+
+/* Controls */
+.bcc-controls {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px;
+}
+.btn.danger { background: transparent; border: 1px solid var(--bad); color: var(--bad); }
+.btn.danger:hover { background: rgba(229,115,115,0.1); }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
@@ -445,11 +596,77 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
 
         <button class="btn" id="runBtn" style="margin-top: 20px;">Process all images</button>
 
-        <div class="prog" id="prog">
-          <hr class="sep" style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
-          <div class="bar"><i id="barFill"></i></div>
-          <div class="meta"><span id="progText">—</span><span id="progCount">0 / 0</span></div>
-          <div class="logbox" id="logbox"></div>
+        <!-- ══ Batch Command Center ══ -->
+        <div class="bcc" id="bcc">
+          <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
+
+          <!-- Header + counter -->
+          <div class="bcc-header">
+            <div class="bcc-title">Batch Command Center</div>
+            <div class="bcc-counter" id="bccCounter">0 <span>/ 0 Products</span></div>
+          </div>
+
+          <!-- Main progress bar -->
+          <div class="bcc-bar-wrap">
+            <div class="bcc-bar-fill" id="bccBarFill"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--mut);margin-bottom:14px;">
+            <span id="bccPct">0%</span>
+            <span id="bccCurrentFile" style="color:var(--gold-soft);">—</span>
+          </div>
+
+          <!-- Metrics row -->
+          <div class="bcc-metrics">
+            <div class="bcc-metric">
+              <div class="bcc-metric-val gold" id="bccEta">—</div>
+              <div class="bcc-metric-lbl">⏱ ETA</div>
+            </div>
+            <div class="bcc-metric">
+              <div class="bcc-metric-val gold" id="bccSpeed">—</div>
+              <div class="bcc-metric-lbl">⚡ Speed</div>
+            </div>
+            <div class="bcc-metric">
+              <div class="bcc-metric-val ok" id="bccDone">0</div>
+              <div class="bcc-metric-lbl">✅ Done</div>
+            </div>
+            <div class="bcc-metric">
+              <div class="bcc-metric-val bad" id="bccErrors">0</div>
+              <div class="bcc-metric-lbl">❌ Errors</div>
+            </div>
+            <div class="bcc-metric">
+              <div class="bcc-metric-val" id="bccRemaining">—</div>
+              <div class="bcc-metric-lbl">⏳ Remaining</div>
+            </div>
+          </div>
+
+          <!-- Sub-step tracker for the current image -->
+          <div class="bcc-substep">
+            <div class="bcc-substep-label" id="bccSubstepLabel">Current image phase</div>
+            <div class="bcc-phases" id="bccPhases">
+              <div class="bcc-phase" id="bccPhaseCopy">✦ Copy</div>
+              <div class="bcc-phase-arrow">›</div>
+              <div class="bcc-phase" id="bccPhaseRender">🎨 Render</div>
+              <div class="bcc-phase-arrow">›</div>
+              <div class="bcc-phase" id="bccPhaseFinalize">📦 Finalize</div>
+            </div>
+          </div>
+
+          <!-- Per-image tile grid -->
+          <div class="bcc-grid-title">Image Queue Status</div>
+          <div class="bcc-tile-grid" id="bccTileGrid"></div>
+
+          <!-- Log window -->
+          <div class="bcc-log-header">
+            <div class="bcc-log-title">Pipeline Logs</div>
+            <button class="bcc-log-toggle" id="bccLogToggle">Collapse ▲</button>
+          </div>
+          <div class="bcc-logbox" id="bccLogbox"></div>
+
+          <!-- Controls -->
+          <div class="bcc-controls">
+            <button class="btn small ghost" id="bccStopBtn">Stop Batch</button>
+            <button class="btn small danger" id="bccRetryBtn" style="display:none;">Retry Failed Images</button>
+          </div>
         </div>
       </div>
     </div>
@@ -706,8 +923,8 @@ async function boot(){
     fillSettings();
     loadQueue(); loadProducts();
     updateSbStatus();
-    const j = await api('/api/status');
-    if(j.running){ $('#prog').classList.add('show'); startPolling(); startProcessing(); }
+    const j = await api('/api/status/detail');
+    if(j.running){ bccShow(); batchStart = batchStart || Date.now(); startPolling(); startProcessing(); }
   }catch(e){ if(e.message!=='Not signed in') toast(e.message); }
 }
 
@@ -825,8 +1042,6 @@ async function loadAuthImg(img, url){
     }
   }catch{}
 }
-
-/* processing loop */
 $('#runBtn').onclick = async () => {
   if(!sScenes.length){ toast('Pick at least one scene'); return; }
   try{
@@ -834,13 +1049,68 @@ $('#runBtn').onclick = async () => {
       scenes: sScenes, angles: sAngles, gender: sGender.value, preset: sPreset.value, aspectRatio: sRatio.value,
       imageLimit: parseInt(sLimit.value, 10)
     }});
-    $('#prog').classList.add('show');
+    bccShow();
+    batchStart = Date.now();
     startPolling();
     startProcessing();
   }catch(e){ toast(e.message); }
 };
 
+// ══ Batch Command Center state ══
+let batchStart = 0;
 let isProcessing = false;
+let bccLogCollapsed = false;
+let bccTileOrder = []; // ordered list of filenames for tile grid
+
+function bccShow() {
+  $('#bcc').classList.add('show');
+  $('#bccRetryBtn').style.display = 'none';
+}
+
+// Toggle log
+$('#bccLogToggle').onclick = () => {
+  bccLogCollapsed = !bccLogCollapsed;
+  const lb = $('#bccLogbox');
+  lb.classList.toggle('collapsed', bccLogCollapsed);
+  $('#bccLogToggle').textContent = bccLogCollapsed ? 'Expand ▼' : 'Collapse ▲';
+};
+
+// Stop batch (graceful — just stop firing /api/process/next)
+$('#bccStopBtn').onclick = () => {
+  isProcessing = false;
+  clearInterval(pollTimer);
+  toast('Batch paused — current image will finish then stop.');
+};
+
+// Retry failed: move errored files back to queued, restart
+$('#bccRetryBtn').onclick = async () => {
+  try {
+    // Re-kick the batch for any remaining input files
+    await api('/api/process', { method: 'POST', body: {
+      scenes: sScenes, angles: sAngles, gender: sGender.value, preset: sPreset.value,
+      aspectRatio: sRatio.value, imageLimit: parseInt(sLimit.value, 10)
+    }});
+    batchStart = Date.now();
+    $('#bccRetryBtn').style.display = 'none';
+    startPolling();
+    startProcessing();
+    toast('Retrying failed images…');
+  } catch(e) { toast(e.message); }
+};
+
+// Exponential-backoff retry wrapper
+async function fetchWithRetry(url, opts, maxRetries = 3) {
+  let delay = 2000;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await api(url, opts);
+    } catch (e) {
+      if (attempt === maxRetries) throw e;
+      await new Promise(r => setTimeout(r, delay));
+      delay *= 2;
+    }
+  }
+}
 
 async function runProcessingLoop() {
   if (isProcessing) return;
@@ -848,14 +1118,14 @@ async function runProcessingLoop() {
   
   while (isProcessing) {
     try {
-      const result = await api('/api/process/next', {method:'POST'});
+      const result = await fetchWithRetry('/api/process/next', {method:'POST'});
       if (result.done) {
         isProcessing = false;
         setTimeout(pollStatus, 500);
         break;
       }
-      // Wait 1.5 seconds before firing the next request to allow the API to breathe
-      await new Promise(r => setTimeout(r, 1500));
+      // Brief pause to let API breathe between steps
+      await new Promise(r => setTimeout(r, 1200));
     } catch (e) {
       isProcessing = false;
       toast('Processing error: ' + e.message);
@@ -876,20 +1146,146 @@ function startPolling(){
 
 async function pollStatus(){
   try{
-    const j = await api('/api/status');
-    const pct = j.total ? Math.round((j.done/j.total)*100) : 0;
-    $('#barFill').style.width = pct + '%';
-    $('#progCount').textContent = `${j.done} / ${j.total} products`;
-    $('#progText').textContent = j.running ? `${j.current} — ${j.step}` : (j.total ? 'Batch complete' : '—');
-    $('#logbox').innerHTML = (j.logs||[]).map(l => `<div class="${/failed|error/i.test(l.msg)?'e':''}">${l.msg}</div>`).join('');
-    $('#logbox').scrollTop = $('#logbox').scrollHeight;
+    const j = await api('/api/status/detail');
+    renderBCC(j);
     if(!j.running && j.total){
       clearInterval(pollTimer);
       isProcessing = false;
       loadQueue(); loadProducts();
-      if(j.done === j.total) toast('Batch complete');
+      if(j.done === j.total) toast('✅ Batch complete — all ' + j.total + ' images processed!');
+      else toast('Batch stopped. ' + j.done + '/' + j.total + ' done.');
+      // Show retry button if any errors remain
+      if (j.errors && j.errors.length > 0) {
+        $('#bccRetryBtn').style.display = 'inline-flex';
+      }
     }
   }catch{}
+}
+
+function renderBCC(j) {
+  const pct = j.total ? Math.round((j.done / j.total) * 100) : 0;
+  $('#bccBarFill').style.width = pct + '%';
+  $('#bccPct').textContent = pct + '%';
+  $('#bccCounter').innerHTML = `${j.done} <span>/ ${j.total} Products</span>`;
+  $('#bccCurrentFile').textContent = j.current ? `⟳ ${j.current}` : (j.done === j.total && j.total > 0 ? '✅ Complete' : '—');
+
+  // Metrics
+  $('#bccDone').textContent = j.done || 0;
+  $('#bccErrors').textContent = (j.errors || []).length;
+  const remaining = (j.total || 0) - (j.done || 0);
+  $('#bccRemaining').textContent = remaining > 0 ? remaining : 0;
+
+  // ETA + speed
+  if (batchStart && j.done > 0) {
+    const elapsedSec = (Date.now() - batchStart) / 1000;
+    const rate = j.done / elapsedSec; // products per second
+    const etaSec = remaining > 0 ? Math.round(remaining / rate) : 0;
+    const etaStr = etaSec > 3600
+      ? `~${Math.round(etaSec/3600)}h ${Math.round((etaSec%3600)/60)}m`
+      : etaSec > 60
+        ? `~${Math.round(etaSec/60)}m ${etaSec%60}s`
+        : etaSec > 0 ? `~${etaSec}s` : 'Done';
+    $('#bccEta').textContent = remaining > 0 ? etaStr : 'Done';
+    const rateMin = (rate * 60).toFixed(1);
+    $('#bccSpeed').textContent = `${rateMin} img/min`;
+  } else {
+    $('#bccEta').textContent = '—';
+    $('#bccSpeed').textContent = '—';
+  }
+
+  // Sub-step phase tracker
+  const pImg = j.perImage || {};
+  const activeFile = j.current;
+  const activeInfo = activeFile ? (pImg[activeFile] || {}) : {};
+  const phase = activeInfo.phase || '';
+
+  if (activeFile) {
+    const name = activeFile.split('/').pop();
+    const sceneText = activeInfo.renderedCount !== undefined && activeInfo.totalRenders > 0
+      ? ` (${activeInfo.renderedCount}/${activeInfo.totalRenders} scenes)`
+      : '';
+    $('#bccSubstepLabel').textContent = `${name}${sceneText}`;
+  } else {
+    $('#bccSubstepLabel').textContent = j.running ? 'Starting…' : 'Idle';
+  }
+
+  const setPh = (elId, phaseKey) => {
+    const el = $('#' + elId);
+    el.className = 'bcc-phase';
+    const order = ['copy','render','finalize','done'];
+    const cur = order.indexOf(phase);
+    const mine = order.indexOf(phaseKey);
+    if (phaseKey === 'done' || mine < cur) {
+      el.classList.add('done');
+      el.firstChild && (el.innerHTML = el.innerHTML.replace('<div class="bcc-spinner"></div>', ''));
+      // prepend checkmark
+      const txt = el.textContent.replace('⟳','').trim();
+      el.textContent = '✓ ' + txt.replace(/^✓ /, '');
+    } else if (mine === cur && j.running) {
+      el.classList.add('active');
+      if (!el.querySelector('.bcc-spinner')) {
+        el.insertAdjacentHTML('afterbegin', '<div class="bcc-spinner"></div>&nbsp;');
+      }
+    }
+  };
+
+  // Reset phase labels
+  $('#bccPhaseCopy').innerHTML = '✦ Copy';
+  $('#bccPhaseRender').innerHTML = '🎨 Render';
+  $('#bccPhaseFinalize').innerHTML = '📦 Finalize';
+  if (j.running || j.done > 0) {
+    setPh('bccPhaseCopy', 'copy');
+    setPh('bccPhaseRender', 'render');
+    setPh('bccPhaseFinalize', 'finalize');
+  }
+
+  // Tile grid
+  const allFiles = Object.keys(pImg);
+  // Maintain insert order
+  for (const f of allFiles) {
+    if (!bccTileOrder.includes(f)) bccTileOrder.push(f);
+  }
+  const grid = $('#bccTileGrid');
+  // Sync tile grid DOM
+  bccTileOrder.forEach((file, idx) => {
+    const info = pImg[file] || { status: 'queued' };
+    let tile = document.getElementById('bcc-tile-' + idx);
+    if (!tile) {
+      tile = document.createElement('div');
+      tile.id = 'bcc-tile-' + idx;
+      tile.className = 'bcc-tile queued';
+      const shortName = file.split('/').pop().replace(/\.[^/.]+$/, '');
+      tile.innerHTML = `
+        <div class="bcc-tile-icon">⬜</div>
+        <div class="bcc-tile-name" title="${file}">${shortName}</div>
+        <div class="bcc-tile-scenes"></div>`;
+      grid.appendChild(tile);
+    }
+    // Update status
+    tile.className = 'bcc-tile ' + (info.status || 'queued');
+    const icon = { queued: '⬜', active: '🟡', done: '🟢', error: '🔴' }[info.status || 'queued'] || '⬜';
+    tile.querySelector('.bcc-tile-icon').textContent = icon;
+    if (info.status === 'done' && info.renderedCount) {
+      tile.querySelector('.bcc-tile-scenes').textContent = `${info.renderedCount} renders`;
+    } else if (info.status === 'active' && info.renderedCount !== undefined && info.totalRenders > 0) {
+      tile.querySelector('.bcc-tile-scenes').textContent = `${info.renderedCount}/${info.totalRenders}`;
+    } else if (info.status === 'error') {
+      tile.querySelector('.bcc-tile-scenes').textContent = 'error';
+    }
+    tile.title = info.productName ? `${info.productName}\nPhase: ${info.phase || 'queued'}` : file;
+  });
+
+  // Log
+  if (!bccLogCollapsed) {
+    const lb = $('#bccLogbox');
+    const logs = j.logs || [];
+    lb.innerHTML = logs.map(l => {
+      const cls = l.level === 'error' ? 'bcc-log-error' : l.level === 'warn' ? 'bcc-log-warn' : 'bcc-log-info';
+      const time = l.t ? new Date(l.t).toLocaleTimeString() : '';
+      return `<div class="${cls}"><span style="color:var(--mut);">[${time}]</span> ${l.msg}</div>`;
+    }).join('');
+    lb.scrollTop = lb.scrollHeight;
+  }
 }
 
 /* products view loader */

@@ -58,6 +58,7 @@ create table if not exists public.jobs (
   logs          jsonb default '[]',
   results       jsonb default '[]',
   errors        jsonb default '[]',
+  "perImage"    jsonb default '{}',   -- per-file status map for Batch Command Center
   created_at    timestamptz default now(),
   updated_at    timestamptz default now()
 );
@@ -87,3 +88,10 @@ drop policy if exists "Public Access to Jewelry Images" on storage.objects;
 create policy "Public Access to Jewelry Images"
 on storage.objects for select
 using ( bucket_id in ('jewelry', 'jewelry-input') );
+
+-- ============================================================
+-- 5. Migration: Add perImage column to existing jobs table
+--    Run this if your jobs table was created before this update.
+-- ============================================================
+alter table public.jobs
+  add column if not exists "perImage" jsonb default '{}';

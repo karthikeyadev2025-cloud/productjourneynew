@@ -213,6 +213,7 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); }
 .dot.on { background: var(--ok); }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -408,8 +409,12 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
     <img class="big" id="mImg" alt="">
     <div class="thumbs" id="mThumbs" style="margin-bottom:16px"></div>
     <div class="desc" id="mDesc"></div>
-    <div class="row" style="margin-top:20px">
-      <button class="btn small ghost" id="mDelete">Delete product</button>
+    <div class="row" style="margin-top:20px; justify-content: space-between; width: 100%;">
+      <div class="row">
+        <button class="btn small" id="mDownloadImg">Download Current Image</button>
+        <button class="btn small ghost" id="mZip">Download All as ZIP</button>
+      </div>
+      <button class="btn small ghost" id="mDelete" style="border-color: var(--bad); color: var(--bad);">Delete product</button>
     </div>
   </div>
 </div>
@@ -749,6 +754,47 @@ function openModal(p){
     im.onclick = () => { $('#mImg').src = img.url || ''; };
     if(i===0) $('#mImg').src = img.url || '';
   });
+  $('#mDownloadImg').onclick = async () => {
+    const url = $('#mImg').src;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = url.substring(url.lastIndexOf('/') + 1) || 'image.png';
+      a.click();
+    } catch (e) {
+      toast('Download failed: ' + e.message);
+    }
+  };
+
+  $('#mZip').onclick = async () => {
+    const oldText = $('#mZip').textContent;
+    $('#mZip').textContent = 'Zipping...';
+    $('#mZip').disabled = true;
+    try {
+      const zip = new JSZip();
+      for (const img of p.images) {
+        if (!img.url) continue;
+        const res = await fetch(img.url);
+        const blob = await res.blob();
+        zip.file(img.name, blob);
+      }
+      const content = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(content);
+      a.download = `${p.folder || 'product'}-renders.zip`;
+      a.click();
+      toast('ZIP download started!');
+    } catch (e) {
+      toast('Failed to generate ZIP: ' + e.message);
+    } finally {
+      $('#mZip').textContent = oldText;
+      $('#mZip').disabled = false;
+    }
+  };
+
   $('#mDelete').onclick = async () => {
     if(!confirm('Permanently delete this product from catalog?')) return;
     await api('/api/products/'+encodeURIComponent(p.id), {method:'DELETE'});

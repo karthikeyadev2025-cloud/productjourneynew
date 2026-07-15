@@ -74,11 +74,31 @@ async function saveConfig(store, updates) {
   await store.saveSettings(mapped);
 }
 
-// ─── Auth (in-memory sessions — resets on cold start, fine for admin tool) ───
-const sessions = new Set();
+// ─── Auth (stateless HMAC tokens — survives Vercel cold starts) ───
+const TOKEN_SECRET = ADMIN_PASS_HASH; // derived from password, stable across instances
+
+function createToken(email) {
+  const payload = Buffer.from(JSON.stringify({ email, iat: Date.now() })).toString('base64url');
+  const sig = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
+}
+
+function verifyToken(token) {
+  if (!token || !token.includes('.')) return false;
+  const [payload, sig] = token.split('.');
+  const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
+  if (sig !== expected) return false;
+  try {
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    // Tokens valid for 7 days
+    if (Date.now() - data.iat > 7 * 24 * 60 * 60 * 1000) return false;
+    return data.email === ADMIN_EMAIL;
+  } catch { return false; }
+}
+
 function auth(req, res, next) {
   const token = req.headers['x-auth-token'];
-  if (token && sessions.has(token)) return next();
+  if (token && verifyToken(token)) return next();
   res.status(401).json({ error: 'Not signed in' });
 }
 
@@ -99,14 +119,13 @@ app.post('/api/login', (req, res) => {
   const { email, password } = req.body || {};
   const hash = crypto.createHash('sha256').update(String(password || '')).digest('hex');
   if (email === ADMIN_EMAIL && hash === ADMIN_PASS_HASH) {
-    const token = crypto.randomBytes(32).toString('hex');
-    sessions.add(token);
+    const token = createToken(email);
     return res.json({ token });
   }
   res.status(401).json({ error: 'Wrong email or password' });
 });
-app.post('/api/logout', auth, (req, res) => {
-  sessions.delete(req.headers['x-auth-token']);
+app.post('/api/logout', (req, res) => {
+  // Stateless — client just deletes the token
   res.json({ ok: true });
 });
 

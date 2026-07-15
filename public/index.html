@@ -3,128 +3,302 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Atelier — Jewelry Pipeline</title>
-<meta name="description" content="AI-powered jewelry product pipeline. Upload raw photos, get professional scene renders, descriptions, and catalog-ready assets.">
+<title>Product Journey Photography — AI Jewelry Render Studio</title>
+<meta name="description" content="Cinematic automated jewelry render studio. Elevate raw catalog photos into high-fashion editorial visual campaigns.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#14120f; --panel:#1d1a16; --panel-2:#26221c; --line:#3a342b;
-  --gold:#c9a24b; --gold-soft:#e6cf96; --cream:#f3ead8; --mut:#9a9184;
-  --ok:#7fb069; --bad:#d16a5a;
+  --ink:#0b0a08; --panel:#151310; --panel-2:#1f1c18; --line:#332e27;
+  --gold:#d4af37; --gold-soft:#f3e5ab; --cream:#f5f0e6; --mut:#a69d8f;
+  --ok:#8ebd77; --bad:#e57373;
   --disp:'Cormorant Garamond',serif; --body:'Inter',sans-serif;
+  --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--ink);color:var(--cream);font-family:var(--body);font-size:14px;min-height:100vh}
+body{background:var(--ink);color:var(--cream);font-family:var(--body);font-size:14px;min-height:100vh;overflow-x:hidden}
 button{font-family:var(--body);cursor:pointer;border:none}
 input,select,textarea{font-family:var(--body)}
-a{color:var(--gold-soft)}
+a{color:var(--gold-soft);text-decoration:none}
 
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
-  background:radial-gradient(ellipse at 50% -10%, #2b2418 0%, var(--ink) 60%)}
-.login-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:40px 34px}
-.brand{font-family:var(--disp);font-size:38px;font-weight:600;letter-spacing:.5px;text-align:center;color:var(--gold-soft)}
-.brand em{color:var(--gold)}
-.tagline{text-align:center;color:var(--mut);margin:6px 0 30px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase}
-label{display:block;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:16px 0 6px}
-input,select,textarea{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:8px;color:var(--cream);padding:11px 13px;font-size:14px}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold)}
-.btn{background:var(--gold);color:#1a1508;font-weight:600;border-radius:8px;padding:12px 18px;font-size:14px;width:100%;margin-top:24px;transition:filter .15s}
-.btn:hover{filter:brightness(1.08)}
-.btn:disabled{opacity:.5;cursor:default}
-.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--cream);width:auto}
-.btn.ghost:hover{border-color:var(--gold)}
-.btn.small{width:auto;padding:8px 14px;margin-top:0;font-size:13px}
-.err{color:var(--bad);margin-top:12px;font-size:13px;min-height:16px}
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes goldPulse { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); } }
+@keyframes glow { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.3; } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
-.shell{display:none;max-width:1200px;margin:0 auto;padding:0 24px 80px}
-header{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid var(--line);margin-bottom:28px}
-header .brand{font-size:26px;text-align:left}
-nav{display:flex;gap:6px}
-nav button{background:transparent;color:var(--mut);padding:9px 16px;border-radius:8px;font-size:13.5px;font-weight:500}
-nav button.on{background:var(--panel-2);color:var(--gold-soft)}
-nav button:hover{color:var(--cream)}
+.animated { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.delay-1 { animation-delay: 0.2s; }
+.delay-2 { animation-delay: 0.4s; }
+.delay-3 { animation-delay: 0.6s; }
 
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px}
-h2{font-family:var(--disp);font-size:24px;font-weight:600;color:var(--gold-soft);margin-bottom:4px}
-.sub{color:var(--mut);font-size:13px;margin-bottom:18px}
-.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+/* Landing Section */
+.hero-glow {
+  position: absolute; top: -10%; left: 50%; transform: translateX(-50%);
+  width: 80%; height: 60%; background: radial-gradient(ellipse at center, rgba(212,175,55,0.08) 0%, rgba(11,10,8,0) 70%);
+  z-index: 0; pointer-events: none; animation: glow 8s infinite ease-in-out;
+}
+.landing-hero {
+  position: relative; max-width: 1100px; margin: 0 auto; padding: 100px 24px 60px;
+  text-align: center; z-index: 1;
+}
+.brand-badge {
+  display: inline-flex; align-items: center; gap: 8px; background: rgba(212, 175, 55, 0.07);
+  border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 99px; padding: 6px 16px;
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-soft);
+  margin-bottom: 24px;
+}
+.logo-container {
+  display: flex; justify-content: center; margin-bottom: 30px;
+}
+.logo-img {
+  width: 90px; height: 90px; border-radius: 50%; border: 1px solid var(--line);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5); object-fit: cover; animation: float 6s infinite ease-in-out;
+}
+.hero-title {
+  font-family: var(--disp); font-size: 58px; font-weight: 300; line-height: 1.1;
+  letter-spacing: -0.5px; color: var(--cream); margin-bottom: 18px;
+}
+.hero-title em {
+  font-family: var(--disp); font-style: italic; font-weight: 400; color: var(--gold);
+}
+.hero-subtitle {
+  font-size: 16px; font-weight: 300; color: var(--mut); max-width: 600px; margin: 0 auto 40px;
+  line-height: 1.6;
+}
+.hero-actions {
+  display: flex; justify-content: center; gap: 16px; margin-bottom: 80px;
+}
 
-.drop{border:1.5px dashed var(--line);border-radius:12px;padding:28px;text-align:center;color:var(--mut);cursor:pointer;transition:.15s}
-.drop:hover,.drop.over{border-color:var(--gold);color:var(--gold-soft)}
-.queue{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-top:16px}
-.qitem{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--ink)}
-.qitem img{width:100%;height:96px;object-fit:cover;display:block}
-.qitem .name{font-size:10.5px;color:var(--mut);padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qitem .x{position:absolute;top:5px;right:5px;background:rgba(20,18,15,.85);color:var(--cream);border-radius:6px;width:22px;height:22px;font-size:12px}
+/* Journey Grid styling */
+.journey-showcase {
+  max-width: 1100px; margin: 0 auto 100px; padding: 0 24px; position: relative; z-index: 1;
+}
+.section-header {
+  text-align: center; margin-bottom: 50px;
+}
+.section-header h3 {
+  font-family: var(--disp); font-size: 32px; font-weight: 400; letter-spacing: 0.5px;
+  color: var(--gold-soft);
+}
+.section-header p {
+  color: var(--mut); font-size: 14px; font-weight: 300; margin-top: 6px;
+}
+.journey-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;
+}
+.journey-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 32px 24px; transition: var(--transition); text-align: left;
+  display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden;
+}
+.journey-card:hover {
+  transform: translateY(-5px); border-color: rgba(212, 175, 55, 0.4);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(212, 175, 55, 0.02);
+}
+.journey-card::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+  background: var(--gold); transform: scaleY(0); transition: var(--transition); origin: bottom;
+}
+.journey-card:hover::before {
+  transform: scaleY(1);
+}
+.journey-step-num {
+  font-family: var(--disp); font-size: 38px; font-style: italic; color: rgba(212, 175, 55, 0.2);
+  margin-bottom: 12px;
+}
+.journey-card h4 {
+  font-family: var(--disp); font-size: 22px; font-weight: 500; color: var(--cream);
+  margin-bottom: 10px;
+}
+.journey-card p {
+  color: var(--mut); font-size: 13.5px; line-height: 1.6; font-weight: 300;
+}
 
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-.chip{background:var(--ink);border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:7px 14px;font-size:12.5px;cursor:pointer;user-select:none}
-.chip.on{border-color:var(--gold);color:var(--gold-soft);background:var(--panel-2)}
-.hint{font-size:11.5px;color:var(--mut);margin-top:6px;font-style:italic}
+/* Login Overlay / Card */
+.login-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(11, 10, 8, 0.95);
+  backdrop-filter: blur(8px); z-index: 100; align-items: center; justify-content: center;
+  padding: 24px; transition: var(--transition);
+}
+.login-card {
+  width: 100%; max-width: 400px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 20px; padding: 45px 35px; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+  position: relative;
+}
+.login-close {
+  position: absolute; top: 20px; right: 20px; color: var(--mut); font-size: 20px;
+  background: none; border: none; cursor: pointer; transition: var(--transition);
+}
+.login-close:hover { color: var(--cream); }
 
-.prog{margin-top:16px;display:none}
-.prog.show{display:block}
-.bar{height:8px;background:var(--ink);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-soft));width:0%;transition:width .4s;border-radius:99px}
-.meta{display:flex;justify-content:space-between;color:var(--mut);font-size:12.5px;margin-top:8px}
-.logbox{background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:14px;height:180px;overflow:auto;font-size:12px;color:var(--mut);line-height:1.7;font-family:ui-monospace,monospace}
-.logbox .e{color:var(--bad)}
+/* Interface UI Styling */
+.btn {
+  background: var(--gold); color: #0b0a08; font-weight: 600; border-radius: 8px;
+  padding: 14px 28px; font-size: 14px; transition: var(--transition);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+.btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+.btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--cream); }
+.btn.ghost:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
+.btn.small { padding: 8px 14px; font-size: 13px; margin: 0; }
+.btn.pulse { animation: goldPulse 2s infinite; }
 
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
-.pcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-.pcard .hero{height:190px;background:var(--ink)}
-.pcard .hero img{width:100%;height:100%;object-fit:cover;display:block}
-.pcard .body{padding:16px;flex:1;display:flex;flex-direction:column;gap:8px}
-.pcard .pname{font-family:var(--disp);font-size:20px;font-weight:600;color:var(--gold-soft)}
-.pcard .pshort{color:var(--mut);font-size:12.5px;line-height:1.55;flex:1}
-.thumbs{display:flex;gap:6px;flex-wrap:wrap}
-.thumbs img{width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--line);cursor:pointer}
-.pcard .actions{display:flex;gap:8px;margin-top:6px}
-.empty{color:var(--mut);text-align:center;padding:50px 0;font-size:13.5px}
+.shell { display: none; max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+header { display: flex; align-items: center; justify-content: space-between; padding: 25px 0; border-bottom: 1px solid var(--line); margin-bottom: 35px; }
+header .brand { font-family: var(--disp); font-size: 28px; font-weight: 500; color: var(--gold-soft); display: flex; align-items: center; gap: 10px; }
+header .brand em { color: var(--gold); font-style: normal; }
+header .brand img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line); }
 
-.modal{display:none;position:fixed;inset:0;background:rgba(10,9,7,.88);z-index:50;align-items:center;justify-content:center;padding:24px}
-.modal.show{display:flex}
-.modal .inner{max-width:900px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px;max-height:92vh;overflow:auto}
-.modal img.big{width:100%;border-radius:10px;margin:14px 0}
-.modal .desc{color:var(--cream);font-size:13.5px;line-height:1.75;white-space:pre-wrap}
-.pill{display:inline-block;background:var(--panel-2);border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:11.5px;color:var(--mut);margin:2px 4px 2px 0}
+nav { display: flex; gap: 8px; }
+nav button { background: transparent; color: var(--mut); padding: 10px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 500; transition: var(--transition); }
+nav button.on { background: var(--panel-2); color: var(--gold-soft); border: 1px solid var(--line); }
+nav button:hover { color: var(--cream); }
 
-.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--panel-2);border:1px solid var(--gold);color:var(--cream);padding:12px 22px;border-radius:10px;font-size:13.5px;display:none;z-index:99}
-hr.sep{border:none;border-top:1px solid var(--line);margin:20px 0}
-.ok-txt{color:var(--ok)}
-.bad-txt{color:var(--bad)}
-.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--bad)}
-.dot.on{background:var(--ok)}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--gold-soft); margin-bottom: 6px; }
+
+/* Grid systems */
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+@media(max-width:900px){ .grid2 { grid-template-columns: 1fr; } }
+
+.drop { border: 1.5px dashed var(--line); border-radius: 12px; padding: 36px 20px; text-align: center; color: var(--mut); cursor: pointer; transition: var(--transition); }
+.drop:hover, .drop.over { border-color: var(--gold); color: var(--gold-soft); background: rgba(212, 175, 55, 0.02); }
+.queue { display: grid; grid-template-columns: repeat(auto-fill,minmax(110px,1fr)); gap: 12px; margin-top: 18px; }
+.qitem { position: relative; border: 1px solid var(--line); border-radius: 10px; overflow:hidden; background:var(--ink); transition: var(--transition); }
+.qitem:hover { transform: scale(1.03); }
+.qitem img { width: 100%; height: 96px; object-fit: cover; display: block; }
+.qitem .name { font-size: 10.5px; color: var(--mut); padding: 6px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qitem .x { position: absolute; top: 5px; right: 5px; background: rgba(11,10,8,0.85); color: var(--cream); border-radius: 6px; width: 22px; height: 22px; font-size: 12px; display:flex; align-items:center; justify-content:center; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.chip { background: var(--ink); border: 1px solid var(--line); color: var(--mut); border-radius: 99px; padding: 7px 16px; font-size: 12.5px; cursor: pointer; user-select: none; transition: var(--transition); }
+.chip.on { border-color: var(--gold); color: var(--gold-soft); background: var(--panel-2); }
+.hint { font-size: 11.5px; color: var(--mut); margin-top: 6px; font-style: italic; }
+
+.prog { margin-top: 20px; display: none; }
+.prog.show { display: block; }
+.bar { height: 8px; background: var(--ink); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-soft)); width: 0%; transition: width 0.4s; border-radius: 99px; }
+.meta { display: flex; justify-content: space-between; color: var(--mut); font-size: 12.5px; margin-top: 8px; }
+.logbox { background: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-top: 14px; height: 200px; overflow: auto; font-size: 12px; color: var(--mut); line-height: 1.7; font-family: ui-monospace,monospace; }
+.logbox .e { color: var(--bad); }
+
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill,minmax(270px,1fr)); gap: 24px; }
+.pcard { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: var(--transition); }
+.pcard:hover { transform: translateY(-4px); border-color: rgba(212, 175, 55, 0.3); }
+.pcard .hero { height: 200px; background: var(--ink); overflow: hidden; position: relative; }
+.pcard .hero img { width: 100%; height: 100%; object-fit: cover; display: block; transition: var(--transition); }
+.pcard:hover .hero img { transform: scale(1.05); }
+.pcard .body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.pcard .pname { font-family: var(--disp); font-size: 21px; font-weight: 500; color: var(--gold-soft); }
+.pcard .pshort { color: var(--mut); font-size: 12.5px; line-height: 1.6; flex: 1; }
+.thumbs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.thumbs img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); cursor: pointer; transition: var(--transition); }
+.thumbs img:hover { border-color: var(--gold); }
+.pcard .actions { display: flex; gap: 8px; margin-top: 10px; }
+.empty { color: var(--mut); text-align: center; padding: 60px 0; font-size: 14px; font-weight: 300; }
+
+.modal { display: none; position: fixed; inset: 0; background: rgba(5,4,3,0.92); z-index: 200; align-items: center; justify-content: center; padding: 24px; backdrop-filter: blur(5px); }
+.modal.show { display: flex; }
+.modal .inner { max-width: 900px; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 32px; max-height: 92vh; overflow: auto; }
+.modal img.big { width: 100%; max-height: 480px; object-fit: contain; border-radius: 12px; margin: 18px 0; background: var(--ink); border: 1px solid var(--line); }
+
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--gold); color: var(--cream); padding: 14px 26px; border-radius: 10px; font-size: 13.5px; display: none; z-index: 999; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.ok-txt { color: var(--ok); }
+.bad-txt { color: var(--bad); }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--mut); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); }
+.dot.on { background: var(--ok); }
 </style>
 </head>
 <body>
 
-<div class="login-wrap" id="loginView">
+<!-- Landing Container (Shows to guests) -->
+<div id="landingView">
+  <div class="hero-glow"></div>
+  
+  <section class="landing-hero animated">
+    <div class="logo-container">
+      <img src="/logo.png" alt="Product Journey Photography Logo" class="logo-img" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=120&auto=format&fit=crop&q=80'">
+    </div>
+    
+    <div class="brand-badge">Luxury AI Photography Engine</div>
+    <h1 class="hero-title">Automating the <em>Product Journey</em></h1>
+    <p class="hero-subtitle">
+      Transform simple raw jewelry photos into a comprehensive visual odyssey. In seconds, generate professional studio cutouts, high-fashion model campaigns, golden hour campaign assets, and editorial flat-lays.
+    </p>
+    
+    <div class="hero-actions">
+      <button class="btn pulse" onclick="openLogin()">Enter Render Studio</button>
+      <a href="#explainSection" class="btn ghost">Explore The Journey</a>
+    </div>
+  </section>
+
+  <!-- Narrative / Journey Steps -->
+  <section class="journey-showcase animated delay-1" id="explainSection">
+    <div class="section-header">
+      <h3>The Photographic Transformation</h3>
+      <p>How the AI turns a single upload into a premium multi-scene catalog</p>
+    </div>
+    
+    <div class="journey-grid">
+      <div class="journey-card">
+        <div class="journey-step-num">01</div>
+        <h4>Raw Upload</h4>
+        <p>Drop a simple photo of your jewelry from any camera. The system uploads it securely to Supabase Cloud Storage.</p>
+      </div>
+      <div class="journey-card">
+        <div class="journey-step-num">02</div>
+        <h4>AI Copywriting</h4>
+        <p>Gemini analyzes the image, generating luxury copy, detailed design stories, exact category tags, and metallic descriptions.</p>
+      </div>
+      <div class="journey-card">
+        <div class="journey-step-num">03</div>
+        <h4>Inpainting Renders</h4>
+        <p>The image generator builds 4-6 beautiful scene variants. The jewelry stays 100% untouched; only the backdrop and environment transform.</p>
+      </div>
+      <div class="journey-card">
+        <div class="journey-step-num">04</div>
+        <h4>Ready for Storefront</h4>
+        <p>Renders are linked in the Supabase DB and served through global CDN links. Connect WooCommerce, Shopify, or download in bulk instantly.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Login Modal -->
+<div class="login-overlay" id="loginView">
   <div class="login-card">
-    <div class="brand">Ate<em>l</em>ier</div>
-    <div class="tagline">Jewelry Product Pipeline</div>
-    <label>Email</label>
-    <input id="email" type="email" autocomplete="username" placeholder="you@example.com">
-    <label>Password</label>
-    <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••">
-    <button class="btn" id="loginBtn">Sign in</button>
-    <div class="err" id="loginErr"></div>
+    <button class="login-close" onclick="closeLogin()">✕</button>
+    <div class="brand" style="margin-bottom: 24px; text-align: center;">Product <em>J</em>ourney</div>
+    <div class="tagline" style="text-align: center; color: var(--mut); margin-bottom: 30px; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;">Render Studio Sign In</div>
+    
+    <label style="display: block; font-size: 11px; text-transform: uppercase; color: var(--mut); margin-bottom: 6px;">Email Address</label>
+    <input id="email" type="email" autocomplete="username" placeholder="productjounery@gmail.com" style="margin-bottom: 16px;">
+    
+    <label style="display: block; font-size: 11px; text-transform: uppercase; color: var(--mut); margin-bottom: 6px;">Secure Password</label>
+    <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••" style="margin-bottom: 24px;">
+    
+    <button class="btn" id="loginBtn" style="width: 100%;">Sign in to Workspace</button>
+    <div class="err" id="loginErr" style="text-align: center; margin-top: 16px;"></div>
   </div>
 </div>
 
+<!-- Main App Studio Workspace -->
 <div class="shell" id="appView">
   <header>
-    <div class="brand">Ate<em>l</em>ier</div>
+    <div class="brand">
+      <img src="/logo.png" alt="Logo" onerror="this.style.display='none'">
+      Product <em>J</em>ourney <span>Photography</span>
+    </div>
     <nav>
       <button data-tab="studio" class="on">Studio</button>
       <button data-tab="products">Products</button>
       <button data-tab="settings">Settings</button>
-      <button id="logoutBtn">Sign out</button>
+      <button id="logoutBtn" class="btn small ghost">Sign out</button>
     </nav>
   </header>
 
@@ -132,35 +306,35 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:20px 0}
   <section id="tab-studio">
     <div class="grid2">
       <div class="card">
-        <h2>Upload queue</h2>
-        <div class="sub">Drop raw jewelry photos here — they upload to Supabase Storage.</div>
+        <h2>Upload raw queue</h2>
+        <div class="sub">Drop raw jewelry photos here — uploads go directly to Supabase Storage.</div>
         <div class="drop" id="drop">Click or drag images here (JPG / PNG / WEBP)</div>
         <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple hidden>
         <div class="queue" id="queue"></div>
       </div>
 
       <div class="card">
-        <h2>Batch settings</h2>
-        <div class="sub">Choose which scenes, angles and model style to render.</div>
+        <h2>Batch options</h2>
+        <div class="sub">Choose which scenes, angles and model styling to render.</div>
 
-        <label>Scenes</label>
+        <label>Selected Scenes</label>
         <div class="chips" id="chips-scenes"></div>
 
         <label>Extra angles (studio, jewelry only)</label>
         <div class="chips" id="chips-angles"></div>
-        <div class="hint">Optional — adds clean neutral shots from each angle.</div>
+        <div class="hint">Adds clean studio shots from specified angles.</div>
 
         <label>Model gender</label>
         <div class="chips" id="chips-gender"></div>
 
         <label>Style preset</label>
         <div class="chips" id="chips-preset"></div>
-        <div class="hint">Only applies to scenes with a model (editorial, golden hour, macro).</div>
+        <div class="hint">Applies to model lifestyle scene prompts.</div>
 
         <button class="btn" id="runBtn">Process all images</button>
 
         <div class="prog" id="prog">
-          <hr class="sep">
+          <hr class="sep" style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
           <div class="bar"><i id="barFill"></i></div>
           <div class="meta"><span id="progText">—</span><span id="progCount">0 / 0</span></div>
           <div class="logbox" id="logbox"></div>
@@ -171,26 +345,26 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:20px 0}
 
   <!-- PRODUCTS -->
   <section id="tab-products" hidden>
-    <div class="card" style="margin-bottom:18px">
+    <div class="card" style="margin-bottom:20px">
       <div class="row" style="justify-content:space-between">
         <div>
-          <h2>Finished products</h2>
-          <div class="sub" style="margin-bottom:0">Stored in Supabase. Any storefront can pull from <code>/storefront/products</code>.</div>
+          <h2>Visual Asset Catalog</h2>
+          <div class="sub" style="margin-bottom:0">All outputs sync automatically with Supabase. Integrate via storefront URL API.</div>
         </div>
         <div class="row">
-          <button class="btn small ghost" id="csvBtn">Download catalog.csv</button>
+          <button class="btn small" id="csvBtn">Export catalog.csv</button>
         </div>
       </div>
     </div>
     <div class="pgrid" id="pgrid"></div>
-    <div class="empty" id="pEmpty" hidden>Nothing here yet — run a batch from the Studio.</div>
+    <div class="empty" id="pEmpty" hidden>Nothing here yet — run a batch from the Studio tab.</div>
   </section>
 
   <!-- SETTINGS -->
   <section id="tab-settings" hidden>
     <div class="grid2">
       <div class="card">
-        <h2>Gemini</h2>
+        <h2>Gemini Configuration</h2>
         <div class="sub">Your Google AI Studio key. Stored in Supabase settings table.</div>
         <label>API key</label>
         <input id="apiKey" type="password" placeholder="AIza…">
@@ -206,8 +380,8 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:20px 0}
       </div>
 
       <div class="card">
-        <h2>Supabase</h2>
-        <div class="sub">Connected via environment variables. Run <code>SUPABASE_SETUP.sql</code> once in your project.</div>
+        <h2>Supabase Configuration</h2>
+        <div class="sub">Backend client credentials. Loaded from backend environment variables.</div>
         <label>Project URL</label>
         <input id="sbUrl" placeholder="https://xxxxx.supabase.co">
         <label>Service role key (secret)</label>
@@ -229,7 +403,7 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:20px 0}
       <h2 id="mName">—</h2>
       <button class="btn small ghost" onclick="closeModal()">Close</button>
     </div>
-    <div id="mPills"></div>
+    <div id="mPills" style="margin-top: 10px;"></div>
     <img class="big" id="mImg" alt="">
     <div class="thumbs" id="mThumbs" style="margin-bottom:16px"></div>
     <div class="desc" id="mDesc"></div>
@@ -251,6 +425,13 @@ let processingTimer = null;
 const $ = s => document.querySelector(s);
 function toast(msg, ms=2600){ const t=$('#toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none', ms); }
 
+function openLogin() {
+  $('#loginView').style.display = 'flex';
+}
+function closeLogin() {
+  $('#loginView').style.display = 'none';
+}
+
 async function api(url, opts={}){
   opts.headers = Object.assign({'x-auth-token': token}, opts.headers||{});
   if(opts.body && !(opts.body instanceof FormData)){ opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(opts.body); }
@@ -258,7 +439,6 @@ async function api(url, opts={}){
   if(r.status===401){ showLogin(); throw new Error('Not signed in'); }
   const ct = r.headers.get('content-type') || '';
   if(ct.includes('text/csv')){
-    // Handle CSV download
     const blob = await r.blob();
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -271,9 +451,18 @@ async function api(url, opts={}){
   return data;
 }
 
-/* auth */
-function showLogin(){ $('#loginView').style.display='flex'; $('#appView').style.display='none'; }
-function showApp(){ $('#loginView').style.display='none'; $('#appView').style.display='block'; boot(); }
+/* auth views */
+function showLogin(){
+  $('#landingView').style.display='block';
+  $('#loginView').style.display='flex';
+  $('#appView').style.display='none';
+}
+function showApp(){
+  $('#landingView').style.display='none';
+  $('#loginView').style.display='none';
+  $('#appView').style.display='block';
+  boot();
+}
 $('#loginBtn').onclick = async () => {
   $('#loginErr').textContent='';
   try{
@@ -284,7 +473,7 @@ $('#loginBtn').onclick = async () => {
 $('#pass').addEventListener('keydown', e => { if(e.key==='Enter') $('#loginBtn').click(); });
 $('#logoutBtn').onclick = async () => { try{ await api('/api/logout',{method:'POST'}); }catch{} token=''; localStorage.removeItem('atelier_token'); showLogin(); };
 
-/* tabs */
+/* tabs navigation */
 document.querySelectorAll('nav button[data-tab]').forEach(b => b.onclick = () => {
   document.querySelectorAll('nav button[data-tab]').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
@@ -343,7 +532,7 @@ async function saveCfgSilent(){
   }catch{}
 }
 
-/* upload queue */
+/* upload queue methods */
 const drop = $('#drop'), fileInput = $('#fileInput');
 drop.onclick = () => fileInput.click();
 drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
@@ -355,7 +544,7 @@ async function uploadFiles(files){
   if(!files.length) return;
   const fd = new FormData();
   [...files].forEach(f => fd.append('images', f));
-  try{ await api('/api/input/upload', {method:'POST', body:fd}); toast(files.length + ' image(s) added'); loadQueue(); }
+  try{ await api('/api/input/upload', {method:'POST', body:fd}); toast(files.length + ' image(s) added to queue'); loadQueue(); }
   catch(e){ toast(e.message); }
   fileInput.value='';
 }
@@ -368,7 +557,6 @@ async function loadQueue(){
     el.innerHTML = `<img alt=""><button class="x" title="Remove">✕</button><div class="name">${f}</div>`;
     el.querySelector('.x').onclick = async () => { await api('/api/input/'+encodeURIComponent(f), {method:'DELETE'}); loadQueue(); };
     q.appendChild(el);
-    // Load preview via redirect (server redirects to Supabase public URL)
     loadAuthImg(el.querySelector('img'), '/api/input/preview/'+encodeURIComponent(f));
   });
   $('#runBtn').disabled = !d.files.length;
@@ -379,7 +567,6 @@ async function loadAuthImg(img, url){
   try{
     const r = await fetch(url, {headers:{'x-auth-token':token}});
     if(r.ok){
-      // Check if it was redirected to a Supabase URL
       if(r.redirected){
         img.src = r.url;
       } else {
@@ -389,7 +576,7 @@ async function loadAuthImg(img, url){
   }catch{}
 }
 
-/* run + progress */
+/* processing loop */
 $('#runBtn').onclick = async () => {
   if(!sScenes.length){ toast('Pick at least one scene'); return; }
   try{
@@ -402,11 +589,6 @@ $('#runBtn').onclick = async () => {
   }catch(e){ toast(e.message); }
 };
 
-/**
- * On Vercel, we can't have long-running background tasks.
- * Instead, the client drives processing by calling /api/process/next repeatedly.
- * Each call processes ONE image within the 60s timeout.
- */
 function startProcessing(){
   clearInterval(processingTimer);
   processingTimer = setInterval(async () => {
@@ -414,15 +596,13 @@ function startProcessing(){
       const result = await api('/api/process/next', {method:'POST'});
       if(result.done){
         clearInterval(processingTimer);
-        // Final poll to update UI
         setTimeout(pollStatus, 500);
       }
     }catch(e){
-      // If error, stop processing
       clearInterval(processingTimer);
       toast('Processing error: ' + e.message);
     }
-  }, 2000); // Wait 2s between requests to avoid overlap
+  }, 2500);
 }
 
 function startPolling(){
@@ -448,13 +628,12 @@ async function pollStatus(){
   }catch{}
 }
 
-/* products */
+/* products view loader */
 async function loadProducts(){
   const d = await api('/api/products');
   const g = $('#pgrid'); g.innerHTML='';
   $('#pEmpty').hidden = d.products.length > 0;
   for(const p of d.products){
-    // Use Supabase public URLs directly from the images array
     const heroImg = (p.images || []).find(i => !/original/.test(i.name));
     const heroUrl = heroImg?.url || '';
     const el = document.createElement('div'); el.className='pcard';
@@ -465,7 +644,7 @@ async function loadProducts(){
         <div class="pshort">${p.short_description || ''}</div>
         <div class="thumbs"></div>
         <div class="actions">
-          <button class="btn small" data-a="open">Open</button>
+          <button class="btn small" data-a="open">View Details</button>
         </div>
       </div>`;
     g.appendChild(el);
@@ -495,7 +674,7 @@ function openModal(p){
     if(i===0) $('#mImg').src = img.url || '';
   });
   $('#mDelete').onclick = async () => {
-    if(!confirm('Delete this product permanently?')) return;
+    if(!confirm('Permanently delete this product from catalog?')) return;
     await api('/api/products/'+encodeURIComponent(p.id), {method:'DELETE'});
     closeModal(); loadProducts(); toast('Product deleted');
   };
@@ -506,7 +685,7 @@ $('#modal').addEventListener('click', e => { if(e.target === $('#modal')) closeM
 
 $('#csvBtn').onclick = () => { window.open('/api/export/csv', '_blank'); };
 
-/* settings */
+/* settings management */
 function fillSettings(){
   $('#apiKey').value = cfg.geminiApiKey || '';
   $('#textModel').value = cfg.textModel;
@@ -518,7 +697,7 @@ function fillSettings(){
 function updateSbStatus(){
   const on = cfg.hasSupabase;
   $('#sbDot').classList.toggle('on', on);
-  $('#sbStatus').textContent = on ? 'Supabase configured' : 'Not connected';
+  $('#sbStatus').textContent = on ? 'Supabase connected' : 'Not connected';
 }
 
 $('#saveGemini').onclick = async () => {
@@ -533,7 +712,7 @@ $('#saveGemini').onclick = async () => {
   }catch(e){ $('#geminiMsg').innerHTML = `<span class="bad-txt">${e.message}</span>`; }
 };
 $('#testGemini').onclick = async () => {
-  $('#geminiMsg').textContent='Testing…';
+  $('#geminiMsg').textContent='Testing key connection…';
   try{ await api('/api/settings/test-gemini', {method:'POST'}); $('#geminiMsg').innerHTML='<span class="ok-txt">Key works ✓</span>'; }
   catch(e){ $('#geminiMsg').innerHTML=`<span class="bad-txt">${e.message}</span>`; }
 };
@@ -548,15 +727,18 @@ $('#saveSb').onclick = async () => {
   }catch(e){ $('#sbMsg').innerHTML = `<span class="bad-txt">${e.message}</span>`; }
 };
 $('#testSb').onclick = async () => {
-  $('#sbMsg').textContent='Testing…';
-  try{ await api('/api/settings/test-supabase', {method:'POST'}); $('#sbMsg').innerHTML='<span class="ok-txt">Connected ✓ Table + bucket ready.</span>'; }
+  $('#sbMsg').textContent='Testing database…';
+  try{ await api('/api/settings/test-supabase', {method:'POST'}); $('#sbMsg').innerHTML='<span class="ok-txt">Connected ✓</span>'; }
   catch(e){ $('#sbMsg').innerHTML=`<span class="bad-txt">${e.message}</span>`; }
 };
 
-/* boot */
+/* init boot trigger */
 (async () => {
-  if(!token) return showLogin();
-  try{ await api('/api/status'); showApp(); }catch{ showLogin(); }
+  if(!token) {
+    $('#landingView').style.display = 'block';
+  } else {
+    try{ await api('/api/status'); showApp(); }catch{ $('#landingView').style.display = 'block'; }
+  }
 })();
 </script>
 </body>

@@ -39,7 +39,8 @@ async function loadConfig(store) {
     gender:       'female',
     preset:       'clean',
     aspectRatio:  '1:1',
-    watermarkUrl: ''
+    watermarkUrl: '',
+    imageLimit:   0
   };
 
   if (!store.enabled) return defaults;
@@ -58,6 +59,14 @@ async function loadConfig(store) {
     let presetVal = dbSettings.preset || defaults.preset;
     let aspectRatio = '1:1';
     let watermarkUrl = '';
+    let imageLimit = 0;
+
+    if (presetVal.includes('_imageLimit_')) {
+      const parts = presetVal.split('_imageLimit_');
+      imageLimit = parseInt(parts[1], 10) || 0;
+      presetVal = parts[0];
+    }
+    
     if (presetVal.includes('_aspectRatio_')) {
       const parts = presetVal.split('_aspectRatio_');
       presetVal = parts[0];
@@ -82,7 +91,8 @@ async function loadConfig(store) {
       gender:       dbSettings.gender || defaults.gender,
       preset:       presetVal,
       aspectRatio:  aspectRatio,
-      watermarkUrl: watermarkUrl
+      watermarkUrl: watermarkUrl,
+      imageLimit:   imageLimit
     };
   } catch {
     return defaults;
@@ -100,12 +110,13 @@ async function saveConfig(store, updates) {
   if (updates.angles !== undefined)      mapped.angles = updates.angles;
   if (updates.gender !== undefined)      mapped.gender = updates.gender;
   
-  if (updates.preset !== undefined || updates.aspectRatio !== undefined || updates.watermarkUrl !== undefined) {
+  if (updates.preset !== undefined || updates.aspectRatio !== undefined || updates.watermarkUrl !== undefined || updates.imageLimit !== undefined) {
     const cfg = await loadConfig(store);
     const pVal = updates.preset !== undefined ? updates.preset : cfg.preset;
     const rVal = updates.aspectRatio !== undefined ? updates.aspectRatio : cfg.aspectRatio;
     const wVal = updates.watermarkUrl !== undefined ? updates.watermarkUrl : cfg.watermarkUrl;
-    mapped.preset = `${pVal}_aspectRatio_${rVal}_watermark_${wVal}`;
+    const lVal = updates.imageLimit !== undefined ? updates.imageLimit : cfg.imageLimit;
+    mapped.preset = `${pVal}_aspectRatio_${rVal}_watermark_${wVal}_imageLimit_${lVal}`;
   }
   await store.saveSettings(mapped);
 }
@@ -213,6 +224,7 @@ app.post('/api/settings', auth, async (req, res) => {
     if (b.gender) updates.gender = String(b.gender);
     if (b.preset) updates.preset = String(b.preset);
     if (b.watermarkUrl !== undefined) updates.watermarkUrl = String(b.watermarkUrl);
+    if (b.imageLimit !== undefined) updates.imageLimit = Number(b.imageLimit);
     await saveConfig(store, updates);
     res.json({ ok: true });
   } catch (err) {

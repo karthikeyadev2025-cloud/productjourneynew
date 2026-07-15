@@ -439,6 +439,10 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
         <div class="chips" id="chips-ratio"></div>
         <div class="hint">Adjusts the frame aspect ratios for storefront display or banners.</div>
 
+        <label style="margin-top: 14px;">Number of images to render (Reduces API cost)</label>
+        <div class="chips" id="chips-limit"></div>
+        <div class="hint">Limits the number of generated variants per product.</div>
+
         <button class="btn" id="runBtn" style="margin-top: 20px;">Process all images</button>
 
         <div class="prog" id="prog">
@@ -671,7 +675,7 @@ function renderChips(containerId, items, selected, multi){
 }
 
 /* studio settings state */
-let sScenes=[], sAngles=[], sGender={value:'female'}, sPreset={value:'clean'}, sRatio={value:'1:1'};
+let sScenes=[], sAngles=[], sGender={value:'female'}, sPreset={value:'clean'}, sRatio={value:'1:1'}, sLimit={value:'0'};
 
 async function boot(){
   try{
@@ -682,11 +686,23 @@ async function boot(){
     sGender = {value: cfg.gender || 'female'};
     sPreset = {value: cfg.preset || 'clean'};
     sRatio  = {value: cfg.aspectRatio || '1:1'};
+    sLimit  = {value: String(cfg.imageLimit || 0)};
     renderChips('#chips-scenes',  presets.scenes,  sScenes, true);
     renderChips('#chips-angles',  presets.angles,  sAngles, true);
     renderChips('#chips-gender',  presets.genders, sGender, false);
     renderChips('#chips-preset',  presets.presets, sPreset, false);
     renderChips('#chips-ratio',   presets.ratios,  sRatio,  false);
+    
+    const limitOptions = [
+      { key: '0', label: 'All Selected' },
+      { key: '1', label: '1 Image' },
+      { key: '2', label: '2 Images' },
+      { key: '3', label: '3 Images' },
+      { key: '4', label: '4 Images' },
+      { key: '5', label: '5 Images' }
+    ];
+    renderChips('#chips-limit', limitOptions, sLimit, false);
+    
     fillSettings();
     loadQueue(); loadProducts();
     updateSbStatus();
@@ -698,7 +714,8 @@ async function boot(){
 async function saveCfgSilent(){
   try{
     await api('/api/settings', {method:'POST', body:{
-      scenes: sScenes, angles: sAngles, gender: sGender.value, preset: sPreset.value, aspectRatio: sRatio.value
+      scenes: sScenes, angles: sAngles, gender: sGender.value, preset: sPreset.value, aspectRatio: sRatio.value,
+      imageLimit: parseInt(sLimit.value, 10)
     }});
   }catch{}
 }
@@ -814,7 +831,8 @@ $('#runBtn').onclick = async () => {
   if(!sScenes.length){ toast('Pick at least one scene'); return; }
   try{
     await api('/api/process', {method:'POST', body:{
-      scenes: sScenes, angles: sAngles, gender: sGender.value, preset: sPreset.value, aspectRatio: sRatio.value
+      scenes: sScenes, angles: sAngles, gender: sGender.value, preset: sPreset.value, aspectRatio: sRatio.value,
+      imageLimit: parseInt(sLimit.value, 10)
     }});
     $('#prog').classList.add('show');
     startPolling();

@@ -319,8 +319,9 @@ app.post('/api/process', auth, async (req, res) => {
     const job = await store.getJob();
     if (job.running) return res.status(409).json({ error: 'A batch is already running' });
 
-    // Pass store so startBatch can pre-populate the perImage map for all queued files
-    const result = await startBatch(store);
+    // Pass store and customNames map
+    const customNames = req.body?.customNames || {};
+    const result = await startBatch(store, customNames);
     res.json({ started: true, count: result.count });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -403,6 +404,35 @@ app.delete('/api/products/:id', auth, async (req, res) => {
     const store = getStore();
     await store.deleteProduct(req.params.id);
     res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/products/:id/image/:name', auth, async (req, res) => {
+  try {
+    const store = getStore();
+    const productId = req.params.id;
+    const imageName = req.params.name;
+
+    const products = await store.listProducts({ limit: 10000 });
+    const product = products.find(p => p.id === productId);
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+
+    const images = product.images || [];
+    const imageToDelete = images.find(img => img.name === imageName);
+    if (!imageToDelete) return res.status(404).json({ error: 'Image not found' });
+
+    if (product.folder) {
+      await store.client.storage
+        .from('jewelry')
+        .remove([`${product.folder}/${imageName}`]);
+    }
+
+    const updatedImages = images.filter(img => img.name !== imageName);
+    await store.updateProduct(productId, { images: updatedImages });
+
+    res.json({ ok: true, images: updatedImages });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

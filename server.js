@@ -348,7 +348,8 @@ app.post('/api/process/next', auth, async (req, res) => {
     const result = await processNextImage(cfg, store);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const status = err.status || 500;
+    res.status(status).json({ error: err.message });
   }
 });
 

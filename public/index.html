@@ -813,7 +813,14 @@ let pollTimer = null;
 let processingTimer = null;
 
 const $ = s => document.querySelector(s);
-function toast(msg, ms=2600){ const t=$('#toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none', ms); }
+let toastTimer = null;
+function toast(msg, ms=2600){
+  const t=$('#toast');
+  t.textContent=msg;
+  t.style.display='block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.style.display='none', ms);
+}
 
 function openLogin() {
   $('#loginView').style.display = 'flex';
@@ -1117,13 +1124,17 @@ $('#bccRetryBtn').onclick = async () => {
 };
 
 // Exponential-backoff retry wrapper
-async function fetchWithRetry(url, opts, maxRetries = 3) {
+async function fetchWithRetry(url, opts, maxRetries = 5) {
   let delay = 2000;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await api(url, opts);
     } catch (e) {
       if (attempt === maxRetries) throw e;
+      console.warn(`[Client Retry] Request to ${url} failed: ${e.message}. Retrying in ${delay / 1000}s (attempt ${attempt + 1}/${maxRetries})...`);
+      if (url.includes('/api/process/next')) {
+        toast(`⚠️ Gemini is busy or rate-limited. Retrying in ${delay / 1000}s...`, delay - 200);
+      }
       await new Promise(r => setTimeout(r, delay));
       delay *= 2;
     }

@@ -18,7 +18,24 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--ink);color:var(--cream);font-family:var(--body);font-size:14px;min-height:100vh;overflow-x:hidden}
 button{font-family:var(--body);cursor:pointer;border:none}
-input,select,textarea{font-family:var(--body)}
+input[type="text"], input[type="email"], input[type="password"], select, textarea {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--cream);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  font-family: var(--body);
+  transition: var(--transition);
+}
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+  outline: none;
+  background: var(--panel);
+}
+label { display: block; font-size: 11px; text-transform: uppercase; color: var(--mut); margin-bottom: 8px; font-weight: 500; letter-spacing: 0.05em; }
 a{color:var(--gold-soft);text-decoration:none}
 
 /* Animations */
@@ -317,7 +334,10 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
     <input id="email" type="email" autocomplete="username" placeholder="productjounery@gmail.com" style="margin-bottom: 16px;">
     
     <label style="display: block; font-size: 11px; text-transform: uppercase; color: var(--mut); margin-bottom: 6px;">Secure Password</label>
-    <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••" style="margin-bottom: 24px;">
+    <div style="position: relative; margin-bottom: 24px; width: 100%;">
+      <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••" style="width: 100%; padding-right: 42px;">
+      <button type="button" id="togglePass" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; color: var(--mut); font-size: 16px; border: none; outline: none; padding: 4px;">👁️</button>
+    </div>
     
     <button class="btn" id="loginBtn" style="width: 100%;">Sign in to Studio</button>
     <div class="err" id="loginErr" style="text-align: center; margin-top: 16px;"></div>
@@ -424,11 +444,17 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
         <h2>Gemini Configuration</h2>
         <div class="sub">Your Google AI Studio key. Stored in Supabase settings table.</div>
         <label>API key</label>
-        <input id="apiKey" type="password" placeholder="AIza…">
-        <label>Text model</label>
-        <input id="textModel" placeholder="gemini-2.5-flash">
-        <label>Image model</label>
-        <input id="imageModel" placeholder="gemini-2.5-flash-image">
+        <input id="apiKey" type="password" placeholder="AIza…" style="margin-bottom: 16px;">
+        <label>Text Copywriter Model</label>
+        <select id="textModel" style="margin-bottom: 16px;">
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended - Copywriting)</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro (Creative/High-Fidelity Copy)</option>
+        </select>
+        <label>Image Render Model</label>
+        <select id="imageModel" style="margin-bottom: 16px;">
+          <option value="gemini-2.5-flash-image">Gemini 2.5 Flash Image (Multimodal - Recommended)</option>
+          <option value="imagen-3.0-generate-002">Imagen 3.0 (Photorealistic standalone renders)</option>
+        </select>
         <div class="row" style="margin-top:20px">
           <button class="btn small" id="saveGemini">Save Gemini</button>
           <button class="btn small ghost" id="testGemini">Test key</button>
@@ -941,6 +967,14 @@ $('#testSb').onclick = async () => {
 
 /* init boot trigger */
 (async () => {
+  // Bind password toggle
+  $('#togglePass').onclick = () => {
+    const el = $('#pass');
+    const isPass = el.type === 'password';
+    el.type = isPass ? 'text' : 'password';
+    $('#togglePass').textContent = isPass ? '🙈' : '👁️';
+  };
+
   if(!token) {
     $('#landingView').style.display = 'block';
   } else {

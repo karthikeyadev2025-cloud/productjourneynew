@@ -325,8 +325,8 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
       <img src="/logo.png" alt="Product Journey Logo" class="logo-img" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=120&auto=format&fit=crop&q=80'">
     </div>
     
-    <div class="brand-badge">Premium AI Photography Studio</div>
-    <h1 class="hero-title">Product <em>J</em>ourney</h1>
+    <div class="brand-badge">Premium Photography Studio</div>
+    <h1 class="hero-title">Product <span style="color: var(--gold);">J</span>ourney</h1>
     <p class="tagline" style="color: var(--gold-soft); letter-spacing: 0.18em; font-size: 14px; margin-top: -12px; margin-bottom: 24px;">A desire of every product</p>
     <p class="hero-subtitle">
       Instantly elevate raw product photographs into studio-grade commercial campaign assets. Ideal for cosmetics, bags, watches, footwear, jewelry, electronics, and accessories.
@@ -374,7 +374,7 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
 <div class="login-overlay" id="loginView">
   <div class="login-card">
     <button class="login-close" onclick="closeLogin()">✕</button>
-    <div class="brand" style="margin-bottom: 8px; text-align: center;">Product <em>J</em>ourney</div>
+    <div class="brand" style="margin-bottom: 8px; text-align: center;">Product <span style="color: var(--gold);">J</span>ourney</div>
     <div class="tagline" style="text-align: center; color: var(--gold-soft); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 25px;">A desire of every product</div>
     
     <label style="display: block; font-size: 11px; text-transform: uppercase; color: var(--mut); margin-bottom: 6px;">Email Address</label>
@@ -396,7 +396,7 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
   <header>
     <div class="brand">
       <img src="/logo.png" alt="Logo" onerror="this.style.display='none'">
-      Product <em>J</em>ourney
+      Product <span style="color: var(--gold);">J</span>ourney
     </div>
     <nav>
       <button data-tab="studio" class="on">Studio</button>
@@ -471,16 +471,12 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
         <span class="stat-val" id="stat-total-campaigns">0</span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">AI Renders Generated</span>
+        <span class="stat-label">Campaign Visuals</span>
         <span class="stat-val" id="stat-total-renders">0</span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">Pipeline Status</span>
+        <span class="stat-label">Studio Engine</span>
         <span class="stat-val" style="color: var(--ok);">99.8% Online</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Cloud CDN Engine</span>
-        <span class="stat-val" style="color: var(--gold-soft); font-size: 20px;">Supabase Connected</span>
       </div>
     </div>
 
@@ -564,15 +560,15 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
         <img id="mImgOrig" alt="Original raw photo" src="" style="width: 100%; max-height: 380px; object-fit: contain; border-radius: 8px;">
       </div>
       <div class="card" style="background: var(--ink); border-color: var(--gold); padding: 16px; text-align: center; position: relative;">
-        <span class="stat-label" style="display: block; margin-bottom: 8px; color: var(--gold-soft);">AI Campaign Render</span>
-        <img id="mImg" alt="AI variant render" src="" style="width: 100%; max-height: 380px; object-fit: contain; border-radius: 8px;">
+        <span class="stat-label" style="display: block; margin-bottom: 8px; color: var(--gold-soft);">Campaign Canvas</span>
+        <img id="mImg" alt="Variant render" src="" style="width: 100%; max-height: 380px; object-fit: contain; border-radius: 8px;">
       </div>
     </div>
     
     <div class="thumbs" id="mThumbs" style="margin-bottom:24px; justify-content: center;"></div>
     
     <div class="card" style="background: var(--panel-2); margin-bottom: 24px; border-color: var(--line); padding: 22px;">
-      <span class="stat-label" style="color: var(--gold-soft);">AI E-Commerce Copywriting Studio</span>
+      <span class="stat-label" style="color: var(--gold-soft);">E-Commerce Copywriting Studio</span>
       <div class="copy-board" id="mCopyBoard"></div>
     </div>
     
@@ -886,14 +882,14 @@ async function loadProducts(){
   $('#stat-total-campaigns').textContent = d.products.length;
   let totalRenders = 0;
   d.products.forEach(p => {
-    totalRenders += (p.images || []).filter(i => !/original/.test(i.name)).length;
+    totalRenders += (p.images || []).filter(i => !/original/i.test(i.name)).length;
   });
   $('#stat-total-renders').textContent = totalRenders;
 
   const g = $('#pgrid'); g.innerHTML='';
   $('#pEmpty').hidden = d.products.length > 0;
   for(const p of d.products){
-    const heroImg = (p.images || []).find(i => !/original/.test(i.name));
+    const heroImg = (p.images || []).find(i => !/original/i.test(i.name));
     const heroUrl = heroImg?.url || '';
     const el = document.createElement('div'); el.className='pcard';
     el.innerHTML = `
@@ -908,7 +904,7 @@ async function loadProducts(){
       </div>`;
     g.appendChild(el);
     const th = el.querySelector('.thumbs');
-    (p.images || []).filter(i => !/original/.test(i.name)).slice(0,6).forEach(img => {
+    (p.images || []).filter(i => !/original/i.test(i.name)).slice(0,6).forEach(img => {
       const im = document.createElement('img');
       im.src = img.url || '';
       im.alt = img.name;
@@ -956,11 +952,11 @@ function openModal(p){
   });
   const th = $('#mThumbs'); th.innerHTML='';
   // Set original image canvas
-  const orig = (p.images || []).find(i => /original/.test(i.name));
+  const orig = (p.images || []).find(i => /original/i.test(i.name));
   $('#mImgOrig').src = orig ? orig.url : '';
 
   // Set thumbnails and initial AI Variant render
-  const variants = (p.images || []).filter(i => !/original/.test(i.name));
+  const variants = (p.images || []).filter(i => !/original/i.test(i.name));
   variants.forEach((img,i) => {
     const im = document.createElement('img'); im.title=img.name; im.src=img.url||''; th.appendChild(im);
     im.onclick = () => { $('#mImg').src = img.url || ''; };

@@ -492,7 +492,7 @@ function renderChips(containerId, items, selected, multi){
   const el = $(containerId); el.innerHTML='';
   items.forEach(it => {
     const c = document.createElement('div'); c.className='chip'; c.textContent=it.label; c.dataset.key=it.key;
-    if(multi ? selected.includes(it.key) : selected===it.key) c.classList.add('on');
+    if(multi ? selected.includes(it.key) : selected.value===it.key) c.classList.add('on');
     c.onclick = () => {
       if(multi){
         const i = selected.indexOf(it.key);

@@ -264,6 +264,53 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
+/* Copy Board Styles */
+.copy-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 14px;
+}
+.copy-field {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.copy-field label {
+  font-size: 10px;
+  color: var(--gold-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.copy-field .val {
+  font-size: 13px;
+  color: var(--cream);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.copy-field .copy-btn {
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--gold-soft);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.copy-field .copy-btn:hover {
+  background: var(--gold);
+  color: #0b0a08;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
@@ -508,9 +555,9 @@ h2 { font-family: var(--disp); font-size: 26px; font-weight: 500; color: var(--g
     
     <div class="thumbs" id="mThumbs" style="margin-bottom:24px; justify-content: center;"></div>
     
-    <div class="card" style="background: var(--panel-2); margin-bottom: 24px; border-color: var(--line);">
-      <span class="stat-label">AI Copywriting & Description</span>
-      <div class="desc" id="mDesc" style="margin-top: 10px; font-weight: 300; font-size: 13.5px; line-height: 1.7; color: var(--cream);"></div>
+    <div class="card" style="background: var(--panel-2); margin-bottom: 24px; border-color: var(--line); padding: 22px;">
+      <span class="stat-label" style="color: var(--gold-soft);">AI E-Commerce Copywriting Studio</span>
+      <div class="copy-board" id="mCopyBoard"></div>
     </div>
     
     <div class="row" style="margin-top:20px; justify-content: space-between; width: 100%;">
@@ -861,7 +908,36 @@ function openModal(p){
   $('#mPills').innerHTML = `<span class="pill">${p.folder}</span><span class="pill">${(p.images||[]).length} files</span>` +
     (p.category ? `<span class="pill">${p.category}</span>` : '') +
     (p.materials ? `<span class="pill">${p.materials}</span>` : '') + tags;
-  $('#mDesc').textContent = p.short_description ? `${p.short_description}\n\n${p.long_description || ''}` : '';
+  
+  // Render separated copywriting fields with copy triggers
+  const fields = [
+    { label: 'Product Name', val: p.product_name || '' },
+    { label: 'Short Description', val: p.short_description || '' },
+    { label: 'Long Description (Storytelling)', val: p.long_description || '' },
+    { label: 'Material Composition', val: p.materials || '' },
+    { label: 'Keywords / Search Tags', val: (p.tags || []).join(', ') },
+    { label: 'SEO Meta Title', val: `${p.product_name || ''} | Luxury E-Store` }
+  ];
+  
+  const board = $('#mCopyBoard'); board.innerHTML = '';
+  fields.forEach(f => {
+    const el = document.createElement('div'); el.className = 'copy-field';
+    el.innerHTML = `
+      <label>
+        <span>${f.label}</span>
+        <button class="copy-btn">Copy</button>
+      </label>
+      <div class="val">${f.val || '—'}</div>
+    `;
+    el.querySelector('.copy-btn').onclick = () => {
+      navigator.clipboard.writeText(f.val).then(() => {
+        const btn = el.querySelector('.copy-btn');
+        btn.textContent = 'Copied ✓';
+        setTimeout(() => btn.textContent = 'Copy', 1500);
+      });
+    };
+    board.appendChild(el);
+  });
   const th = $('#mThumbs'); th.innerHTML='';
   // Set original image canvas
   const orig = (p.images || []).find(i => /original/.test(i.name));

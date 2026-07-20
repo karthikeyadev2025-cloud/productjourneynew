@@ -1349,14 +1349,14 @@ async function loadProducts(){
   $('#stat-total-campaigns').textContent = d.products.length;
   let totalRenders = 0;
   d.products.forEach(p => {
-    totalRenders += (p.images || []).filter(i => !/original/i.test(i.name)).length;
+    totalRenders += (p.images || []).filter(i => !/original/i.test(i.name) && i.url).length;
   });
   $('#stat-total-renders').textContent = totalRenders;
 
   const g = $('#pgrid'); g.innerHTML='';
   $('#pEmpty').hidden = d.products.length > 0;
   for(const p of d.products){
-    const heroImg = (p.images || []).find(i => !/original/i.test(i.name));
+    const heroImg = (p.images || []).find(i => !/original/i.test(i.name) && i.url);
     const heroUrl = heroImg?.url || '';
     const el = document.createElement('div'); el.className='pcard';
     el.innerHTML = `
@@ -1371,7 +1371,7 @@ async function loadProducts(){
       </div>`;
     g.appendChild(el);
     const th = el.querySelector('.thumbs');
-    (p.images || []).filter(i => !/original/i.test(i.name)).slice(0,6).forEach(img => {
+    (p.images || []).filter(i => !/original/i.test(i.name) && i.url).slice(0,6).forEach(img => {
       const im = document.createElement('img');
       im.src = img.url || '';
       im.alt = img.name;
@@ -1385,7 +1385,8 @@ function openModal(p){
   activeProductInModal = p;
   $('#mName').textContent = p.product_name || p.folder;
   const tags = (p.tags || []).map(t => `<span class="pill">${t}</span>`).join('');
-  $('#mPills').innerHTML = `<span class="pill">${p.folder}</span><span class="pill">${(p.images||[]).length} files</span>` +
+  const validImagesCount = (p.images || []).filter(i => i.url).length;
+  $('#mPills').innerHTML = `<span class="pill">${p.folder}</span><span class="pill">${validImagesCount} files</span>` +
     (p.category ? `<span class="pill">${p.category}</span>` : '') +
     (p.materials ? `<span class="pill">${p.materials}</span>` : '') + tags;
   
@@ -1443,7 +1444,7 @@ function openModal(p){
   };
 
   // Set thumbnails and initial AI Variant render
-  const variants = (p.images || []).filter(i => !/original/i.test(i.name));
+  const variants = (p.images || []).filter(i => !/original/i.test(i.name) && i.url);
   
   const updateDeleteButtonState = (name) => {
     if (!name || /original/i.test(name)) {

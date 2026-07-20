@@ -460,7 +460,19 @@ app.get('/storefront/products', async (req, res) => {
       limit: Number(req.query.limit) || 200,
       category: req.query.category || null
     });
-    res.json({ products: rows });
+    
+    // Filter out failed renders (placeholder records without a URL)
+    const cleanedRows = rows.map(r => {
+      if (Array.isArray(r.images)) {
+        return {
+          ...r,
+          images: r.images.filter(img => img.url)
+        };
+      }
+      return r;
+    });
+    
+    res.json({ products: cleanedRows });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
